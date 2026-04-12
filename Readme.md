@@ -7,13 +7,29 @@ A sophisticated, microservices-based notification system built with **Spring Boo
 
 ```mermaid
 graph LR
-Client --> API[API Gateway]
-API --> Kafka[Kafka Topic]
-Kafka --> Router[Notification Router]
-Router --> Email[Email Service]
-Router --> Push[Push Service]
-Email --> DLT[DLT Monitor]
-Push --> DLT
+    %% Main Flow
+    Client --> API[API Gateway]
+    API -->|notification-request| KafkaReq[Kafka Topic]
+    KafkaReq --> Router[Notification Router]
+    
+    %% Routing
+    Router -->|notification-email| KafkaEmail[Kafka Topic]
+    Router -->|notification-push| KafkaPush[Kafka Topic]
+    
+    %% Processing
+    KafkaEmail --> Email[Email Service]
+    KafkaPush --> Push[Push Service]
+    
+    %% Success Scenarios
+    Email -->|Success| EmailProvider[Email Provider]
+    Push -->|Success| PushProvider[Push Provider]
+    
+    %% Failure Scenarios (DLT)
+    Router -.->|Failed| DLTTopic[.DLT Topics]
+    Email -.->|Failed| DLTTopic
+    Push -.->|Failed| DLTTopic
+    
+    DLTTopic --> DLT[DLT Monitor]
 ```
 
 ## Core Concepts
