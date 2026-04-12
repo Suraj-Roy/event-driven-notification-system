@@ -18,9 +18,7 @@ public class RequestConsumer {
     private final RoutingProducer routingProducer;
 
 
-    // WHY: This service is BOTH consumer and producer.
-    // It consumes from notification-request and produces to
-    // notification-email/sms/push based on type.
+
     @KafkaListener(
             topics = KafkaTopics.NOTIFICATION_REQUEST,
             groupId = "router-group",
@@ -38,7 +36,7 @@ public class RequestConsumer {
 
         } catch (Exception e) {
             log.error("Routing failed: correlationId={}", event.getCorrelationId(), e);
-            throw e;  // Triggers retry → DLT
+            throw e;
         } finally {
             MDC.clear();
         }

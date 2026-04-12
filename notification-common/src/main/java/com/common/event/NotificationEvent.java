@@ -12,14 +12,14 @@ public class NotificationEvent {
     private String recipient;
     private String subject;
     private String body;
-    private Instant timestamp;
+    private String timestamp;
     private Map<String, String> metadata;
     private String correlationId;  // For tracing across services
 
 
     public NotificationEvent() {
         this.messageId = UUID.randomUUID().toString();
-        this.timestamp = Instant.now();
+        this.timestamp = Instant.now().toString();
     }
 
     public String getMessageId() {
@@ -70,11 +70,11 @@ public class NotificationEvent {
         this.body = body;
     }
 
-    public Instant getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Instant timestamp) {
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
 
