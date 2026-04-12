@@ -1,5 +1,6 @@
 package com.monitor.dltmonitor.consumer;
 
+import com.common.constants.KafkaTopics;
 import com.monitor.dltmonitor.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +21,9 @@ public class DltConsumer {
 
     @KafkaListener(
             topics = {
-                    "notification-email.DLT",
-                    "notification-push.DLT",
-                    "notification-request.DLT"
+                    KafkaTopics.NOTIFICATION_EMAIL+"-dlt",
+                    KafkaTopics.NOTIFICATION_PUSH+"-dlt",
+                    KafkaTopics.NOTIFICATION_REQUEST+"-dlt"
             },
             groupId = "dlt-monitor-group"
     )

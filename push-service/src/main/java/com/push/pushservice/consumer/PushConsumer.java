@@ -29,6 +29,7 @@ public class PushConsumer {
         MDC.put("messageId", event.getMessageId());
 
         try {
+
             if (idempotencyService.isProcessed(event.getMessageId())) {
                 log.info("Duplicate skipped: messageId={}", event.getMessageId());
                 ack.acknowledge();
