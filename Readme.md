@@ -1,6 +1,7 @@
-# 🚀 Event-Driven Notification System
+# Event-Driven Notification System
 
 A sophisticated, microservices-based notification system built with **Spring Boot** and **Apache Kafka** that demonstrates modern event-driven architecture patterns. This system provides reliable, scalable, and traceable notification delivery across multiple channels including email and push notifications.
+
 
 ## Architecture Overview
 
@@ -66,7 +67,7 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group ro
 
 ```
 
-### 🔍 Message Inspection
+### Message Inspection
 ```bash
 # Consume messages from topic (for debugging)
 kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic notification-request --from-beginning
@@ -84,7 +85,7 @@ kafka-broker-api-versions.sh --bootstrap-server localhost:9092
 docker logs kafka
 ```
 
-## 📦 System Components
+## System Components
 
 ### API Gateway (`api-gateway`)
 **Entry point for all notification requests**
@@ -231,7 +232,7 @@ curl -X POST http://localhost:8080/api/notifications \
 
 ## Monitoring & Observability
 
-### 🔍 Metrics Dashboard
+### Metrics Dashboard
 - **Grafana**: Access at `http://localhost:3000`
 - **Prometheus**: Access at `http://localhost:9090`
 - **Health Checks**: Spring Actuator endpoints at `/actuator/health`
@@ -278,7 +279,7 @@ curl -X POST http://localhost:8080/api/notifications \
 
 ## Key Design Patterns
 
-### 🎯 Publisher-Subscriber Pattern
+### Publisher-Subscriber Pattern
 - Decouples message producers from consumers
 - Enables flexible message routing and filtering
 - Supports multiple consumers per message type
@@ -332,7 +333,7 @@ public NewTopic requestTopic() {
 }
 ```
 
-### 🏗Docker Kafka Setup
+### Docker Kafka Setup
 ```yaml
 # From docker-compose.yml
 kafka:
