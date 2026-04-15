@@ -180,15 +180,21 @@ docker logs kafka
 - **Spring Data Redis**: Redis integration with Spring
 
 ### Monitoring & Observability
-- **Prometheus**: Metrics collection and monitoring
+- **Prometheus v3.11.2**: Metrics collection and monitoring
 - **Grafana**: Visualization and dashboarding
+- **Grafana Loki**: Log aggregation and analysis
+- **Grafana Tempo**: Distributed tracing
+- **Grafana Alloy**: OpenTelemetry collection and processing
+- **MinIO**: Object storage for Loki data
 - **Spring Boot Actuator**: Application health and metrics
+- **OpenTelemetry**: Distributed tracing and observability
 - **MDC Logging**: Structured logging with context
 
 ### Development Tools
 - **Lombok**: Reduces boilerplate code
 - **Spring Boot Test**: Comprehensive testing framework
 - **Docker**: Containerization and orchestration
+- **Jib Maven Plugin**: Container image building
 
 ## Quick Start
 
@@ -199,15 +205,19 @@ docker logs kafka
 
 ### 1. Start Infrastructure Services
 ```bash
-cd infra
+cd infra/default
 docker-compose up -d
 ```
 
 This starts:
-- Kafka (ports 9092, 19092)
-- Redis (port 6379)
-- Prometheus (port 9090)
-- Grafana (port 3000)
+- **Kafka** (port 9092) - Message broker
+- **Redis** (port 6379) - Cache and idempotency store
+- **Prometheus** (port 9090) - Metrics collection
+- **Grafana** (port 3000) - Visualization dashboards
+- **Grafana Loki** (port 3100) - Log aggregation
+- **Grafana Tempo** (ports 4317, 4318, 3200) - Distributed tracing
+- **MinIO** (port 9000) - Object storage for Loki
+- **Grafana Alloy** (port 12345) - OpenTelemetry collector
 
 ### 2. Build All Services
 ```bash
@@ -220,6 +230,8 @@ mvn clean install
 ```
 
 ### 3. Start Services
+
+**Option A: Run locally (development)**
 ```bash
 # Start each service in separate terminals
 cd api-gateway && mvn spring-boot:run
@@ -227,6 +239,16 @@ cd notification-router && mvn spring-boot:run
 cd email-service && mvn spring-boot:run
 cd push-service && mvn spring-boot:run
 cd dlt-monitor && mvn spring-boot:run
+```
+
+**Option B: Run with Docker (production-like)**
+```bash
+# Build container images first
+mvn clean install jib:dockerBuild
+
+# Start all services with docker-compose
+cd infra/default
+docker-compose up -d api-gateway notification-router email-service push-service dlt-monitor
 ```
 
 ### 4. Send a Test Notification
@@ -248,9 +270,12 @@ curl -X POST http://localhost:8080/api/notifications \
 
 ## Monitoring & Observability
 
-### Metrics Dashboard
-- **Grafana**: Access at `http://localhost:3000`
-- **Prometheus**: Access at `http://localhost:9090`
+### Access Points
+- **Grafana Dashboards**: `http://localhost:3000` (admin/admin)
+- **Prometheus Metrics**: `http://localhost:9090`
+- **Loki Logs**: `http://localhost:3100`
+- **Tempo Traces**: `http://localhost:3200`
+- **Alloy Collector**: `http://localhost:12345`
 - **Health Checks**: Spring Actuator endpoints at `/actuator/health`
 
 ### Key Metrics
@@ -259,6 +284,14 @@ curl -X POST http://localhost:8080/api/notifications \
 - Consumer lag and processing times
 - Redis cache hit rates
 - JVM performance metrics
+- Distributed tracing spans
+
+### Observability Stack Details
+- **Loki**: Centralized log aggregation with labels and filtering
+- **Tempo**: Distributed tracing with OpenTelemetry integration
+- **Alloy**: Collects metrics, logs, and traces from all services
+- **MinIO**: Provides S3-compatible storage for Loki data
+- **Prometheus**: Scrapes metrics from all Spring Boot Actuator endpoints
 
 
 
@@ -358,5 +391,244 @@ kafka:
     KAFKA_NODE_ID: 1
     KAFKA_PROCESS_ROLES: broker,controller
     KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"  # Topics created programmatically
+```
+
+## Service Endpoints & Ports
+
+### Application Services
+- **API Gateway**: `http://localhost:8080` - Main REST API
+- **Notification Router**: `http://localhost:8081` - Internal routing service
+- **Email Service**: `http://localhost:8082` - Email processing
+- **Push Service**: `http://localhost:8083` - Push notification processing
+- **DLT Monitor**: `http://localhost:8085` - Dead Letter Queue monitoring
+
+### Infrastructure Services
+- **Kafka**: `localhost:9092` - Message broker
+- **Redis**: `localhost:6379` - Cache store
+- **Prometheus**: `http://localhost:9090` - Metrics
+- **Grafana**: `http://localhost:3000` - Dashboards
+- **Loki**: `http://localhost:3100` - Logs
+- **Tempo**: `http://localhost:3200` - Traces
+- **MinIO**: `http://localhost:9000` - Object storage
+
+## Development Guidelines
+
+### Code Structure
+```
+├── api-gateway/          # REST API entry point
+├── notification-router/  # Message routing logic
+├── email-service/        # Email processing
+├── push-service/         # Push notification processing
+├── dlt-monitor/          # Dead Letter Queue monitoring
+├── notification-common/  # Shared DTOs and utilities
+└── infra/               # Infrastructure configuration
+    ├── default/         # Docker Compose setup
+    ├── observability/   # Monitoring stack configs
+    └── prometheus/      # Prometheus configuration
+```
+
+### Building & Deployment
+```bash
+# Build all services
+mvn clean install
+
+# Build Docker images
+mvn clean install jib:dockerBuild
+
+```
+
+### Environment Variables
+Key environment variables for configuration:
+- `KAFKA_BOOTSTRAP_SERVERS`: Kafka broker addresses
+- `REDIS_HOST`: Redis server hostname
+- `SPRING_PROFILES_ACTIVE`: Active Spring profile
+- `OTEL_SERVICE_NAME`: OpenTelemetry service name
+- `MANAGEMENT_TRACING_SAMPLING_PROBABILITY`: Tracing sampling rate
+
+## Troubleshooting
+
+### Common Issues
+
+**Kafka Connection Issues**
+```bash
+# Check Kafka topics
+kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+# Check consumer groups
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list
+```
+
+**Redis Connection Issues**
+```bash
+# Test Redis connection
+redis-cli ping
+
+# Check Redis keys
+redis-cli keys "*"
+```
+
+**Service Health Checks**
+```bash
+# Check all service health
+curl http://localhost:8080/actuator/health
+curl http://localhost:8081/actuator/health
+curl http://localhost:8082/actuator/health
+curl http://localhost:8083/actuator/health
+curl http://localhost:8085/actuator/health
+```
+
+**Docker Issues**
+```bash
+# Check container logs
+docker logs kafka
+docker logs redis
+docker logs api-gateway-ms
+
+# Restart services
+docker-compose restart
+```
+
+## API Documentation
+
+### Endpoints
+
+#### Send Notification
+```http
+POST /api/notifications
+Content-Type: application/json
+
+{
+  "userId": "string",
+  "type": "EMAIL|PUSH",
+  "recipient": "string",
+  "subject": "string (EMAIL only)",
+  "body": "string",
+  "metadata": {
+    "key": "value"
+  }
+}
+```
+
+#### Health Check
+```http
+GET /actuator/health
+```
+
+#### Metrics
+```http
+GET /actuator/metrics
+GET /actuator/prometheus
+```
+
+### Example Requests
+
+**Email Notification**
+```bash
+curl -X POST http://localhost:8080/api/notifications \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "type": "EMAIL",
+    "recipient": "user@example.com",
+    "subject": "Welcome!",
+    "body": "Welcome to our platform!",
+    "metadata": {
+      "source": "registration",
+      "priority": "high"
+    }
+  }'
+```
+
+**Push Notification**
+```bash
+curl -X POST http://localhost:8080/api/notifications \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user456",
+    "type": "PUSH",
+    "recipient": "device_token_123",
+    "body": "New message received!",
+    "metadata": {
+      "platform": "android",
+      "priority": "normal"
+    }
+  }'
+```
+
+
+### Manual Testing
+```bash
+# Test Kafka topics
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic notification-request --from-beginning
+
+# Test Redis operations
+redis-cli set test:key "test:value"
+redis-cli get test:key
+```
+
+## Performance Considerations
+
+### Kafka Optimization
+- **Partition Count**: 3 partitions per topic for parallel processing
+- **Replication Factor**: 1 for single-node setup (increase for production)
+- **Batch Size**: Configurable batch sizes for throughput optimization
+- **Compression**: Enable compression for large messages
+
+### Redis Optimization
+- **Connection Pooling**: Use connection pools for high throughput
+- **TTL Settings**: Configure appropriate TTL for idempotency keys
+- **Memory Management**: Monitor memory usage and set eviction policies
+
+### JVM Tuning
+```bash
+# Recommended JVM settings for production
+-Xms512m -Xmx1g
+-XX:+UseG1GC
+-XX:MaxGCPauseMillis=200
+-XX:+UseStringDeduplication
+```
+
+## Security Considerations
+
+### Authentication & Authorization
+- Implement API key authentication for the gateway
+- Use OAuth2/JWT for service-to-service communication
+- Enable SSL/TLS for all external communications
+
+### Data Protection
+- Encrypt sensitive data in transit and at rest
+- Implement proper secrets management
+- Use environment variables for configuration secrets
+
+### Network Security
+- Configure firewall rules for service communication
+- Use network policies in Kubernetes deployments
+- Enable Kafka SSL authentication for production
+
+## Contributing
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch
+3. Make changes with proper tests
+4. Run the full test suite
+5. Submit a pull request
+
+### Code Standards
+- Follow Java 21 coding conventions
+- Use meaningful variable and method names
+- Add proper Javadoc comments
+- Ensure all tests pass before submission
+
+### Git Hooks
+```bash
+# Install pre-commit hooks
+./scripts/install-hooks.sh
+
+# Run code formatting
+mvn spotless:apply
+
+# Run static analysis
+mvn checkstyle:check
 ```
 
