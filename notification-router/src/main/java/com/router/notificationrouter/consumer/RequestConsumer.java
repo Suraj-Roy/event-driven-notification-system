@@ -25,7 +25,8 @@ public class RequestConsumer {
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void consume(NotificationEvent event, Acknowledgment ack) {
-        MDC.put("correlationId", event.getCorrelationId());
+        // MDC.put("correlationId", event.getCorrelationId());
+        log.info("Notification request received: correlationId={}", event.getCorrelationId());
 
         try {
             log.info("Routing notification: type={}, userId={}",
@@ -37,8 +38,9 @@ public class RequestConsumer {
         } catch (Exception e) {
             log.error("Routing failed: correlationId={}", event.getCorrelationId(), e);
             throw e;
-        } finally {
-            MDC.clear();
         }
+        // } finally {
+        //     MDC.clear();
+        // }
     }
 }

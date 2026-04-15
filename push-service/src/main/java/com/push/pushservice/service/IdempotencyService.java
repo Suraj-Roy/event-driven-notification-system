@@ -17,8 +17,7 @@ public class IdempotencyService {
 
     public boolean isProcessed(String messageId) {
         return Boolean.TRUE.equals(
-                redisTemplate.hasKey("push:processed:" + messageId)
-        );
+                redisTemplate.hasKey("push:processed:" + messageId));
     }
 
     public void markProcessed(String messageId) {

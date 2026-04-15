@@ -19,14 +19,11 @@ public class EmailConsumer {
     private final IdempotencyService idempotencyService;
     private final EmailSender emailSender;
 
-
-    @KafkaListener(
-            topics = KafkaTopics.NOTIFICATION_EMAIL,
-            groupId = "email-service-group"
-    )
+    @KafkaListener(topics = KafkaTopics.NOTIFICATION_EMAIL, groupId = "email-service-group")
     public void consume(NotificationEvent event, Acknowledgment ack) {
-        MDC.put("correlationId", event.getCorrelationId());
-        MDC.put("messageId", event.getMessageId());
+        // MDC.put("correlationId", event.getCorrelationId());
+        // MDC.put("messageId", event.getMessageId());
+        log.info("Email request received: messageId={}", event.getMessageId());
 
         try {
             // Step 1: Idempotency check
@@ -50,8 +47,6 @@ public class EmailConsumer {
         } catch (Exception e) {
             log.error("Email failed: messageId={}", event.getMessageId(), e);
             throw e;
-        } finally {
-            MDC.clear();
-        }
+        } 
     }
 }

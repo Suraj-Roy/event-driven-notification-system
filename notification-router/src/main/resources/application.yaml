@@ -7,6 +7,9 @@ spring:
       enabled: true
 
   kafka:
+    template:
+      observation-enabled: true    # producer injects trace headers
+
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
 
     producer:
@@ -29,6 +32,7 @@ spring:
         spring.json.value.default.type: "com.common.event.NotificationEvent"
 
     listener:
+      observation-enabled: true    # consumer extracts trace headers
       concurrency: 3
       ack-mode: manual
 
@@ -39,10 +43,27 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, prometheus
-  metrics:
-    tags:
-      application: ${spring.application.name}
+        include: "*"
   health:
     kafka:
       enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318}/v1/traces
+    metrics:
+      export:
+        enabled: false
+
+logging:
+  level:
+    com:
+      router:
+        notificationrouter: DEBUG
+  pattern:
+    level: "%5p [%d{yyyy-MM-dd HH:mm:ss.SSS}] [${spring.application.name}] [traceId=%X{traceId}, spanId=%X{spanId}] %logger{36} : %msg%n"

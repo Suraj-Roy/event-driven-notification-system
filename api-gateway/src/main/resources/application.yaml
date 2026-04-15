@@ -1,12 +1,14 @@
 spring:
   application:
     name: api-gateway
-
   threads:
     virtual:
       enabled: true
-
   kafka:
+    template:
+      observation-enabled: true
+    listener:
+      observation-enabled: true
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -20,10 +22,23 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, prometheus
+        include: "*"
   health:
     kafka:
       enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 server:
   port: 8080
+
+logging:
+  level:
+    com:
+      gateway:
+        apigateway: DEBUG
+    io:
+      opentelemetry: DEBUG            # temporary — remove once traces flow
+  pattern:
+    level: "%5p [%d{yyyy-MM-dd HH:mm:ss.SSS}] [${spring.application.name}] [traceId=%X{traceId}, spanId=%X{spanId}] %logger{36} : %msg%n"

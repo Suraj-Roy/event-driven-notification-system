@@ -24,10 +24,11 @@ public class NotificationController {
     private final NotificationProducer producer;
 
 
+
+
     @PostMapping
     public ResponseEntity<Map<String, String>> send(
             @Valid @RequestBody NotificationRequest request) {
-
         String correlationId = UUID.randomUUID().toString();
 
         NotificationEvent event = new NotificationEvent();

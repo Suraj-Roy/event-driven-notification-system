@@ -25,8 +25,10 @@ public class PushConsumer {
             groupId = "push-service-group"
     )
     public void consume(NotificationEvent event, Acknowledgment ack) {
-        MDC.put("correlationId", event.getCorrelationId());
-        MDC.put("messageId", event.getMessageId());
+        // MDC.put("correlationId", event.getCorrelationId());
+        // MDC.put("messageId", event.getMessageId());
+        log.info("Push request received: messageId={}", event.getMessageId());
+
 
         try {
 
@@ -45,8 +47,9 @@ public class PushConsumer {
         } catch (Exception e) {
             log.error("Push failed: messageId={}", event.getMessageId(), e);
             throw e;
-        } finally {
-            MDC.clear();
-        }
+        } 
+        // finally {
+        //     MDC.clear();
+        // }
     }
 }

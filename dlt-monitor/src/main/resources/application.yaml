@@ -3,6 +3,8 @@ spring:
     name: dlt-monitor
 
   kafka:
+    template:
+      observation-enabled: true    # producer injects trace headers
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
     consumer:
       group-id: dlt-monitor-group
@@ -13,6 +15,7 @@ spring:
     listener:
       concurrency: 1  # DLT is low volume, 1 thread is enough
       ack-mode: manual
+      observation-enabled: true    # consumer extracts trace headers
 server:
   port: 8085
 
@@ -27,3 +30,11 @@ management:
   health:
     kafka:
       enabled: true
+
+logging:
+  level:
+    com:
+      monitor:
+        dltmonitor: DEBUG
+  pattern:
+    level: "%5p [%d{yyyy-MM-dd HH:mm:ss.SSS}] [${spring.application.name}] [traceId=%X{traceId}, spanId=%X{spanId}] %logger{36} : %msg%n"
